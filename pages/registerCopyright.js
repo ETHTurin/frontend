@@ -1,16 +1,30 @@
 import { ethers } from "ethers";
 import Head from "next/head";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Layout from "../components/Layout";
 import EthersSafe from "@gnosis.pm/safe-core-sdk";
 
 import GnosisSafeArtifact from "../contracts/GnosisSafe.json";
 import CMORegistryArtifact from "../contracts/CMORegistry.json";
+import { useDropzone } from "react-dropzone";
+
+import IPFSUtils from "../utils/ipfs";
 
 export default function RegisterCopyright() {
   const [members, setMembers] = useState([]);
   const [shares, setShares] = useState([]);
   const [safeContractInstance, setSafeContractInstance] = useState();
+
+  const [fileName, setFileName] = useState("");
+  const [cid, setCid] = useState("");
+
+  const onDrop = useCallback(async (acceptedFiles) => {
+    const _cid = await IPFSUtils.upload(acceptedFiles[0]);
+
+    setFileName(acceptedFiles[0].name);
+    setCid(_cid);
+  }, []);
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop });
 
   async function deployMultiSig() {
     const provider = new ethers.providers.Web3Provider(window.ethereum);
@@ -55,7 +69,6 @@ export default function RegisterCopyright() {
 
   async function signTx() {
     try {
-      console.log(shares);
       const provider = new ethers.providers.Web3Provider(window.ethereum);
 
       await provider.send("eth_requestAccounts", []);
@@ -69,7 +82,7 @@ export default function RegisterCopyright() {
       );
 
       const submitCidTx = await cmoRegistry.populateTransaction.submitCid(
-        "test_cid",
+        cid,
         members,
         shares
       );
@@ -112,7 +125,7 @@ export default function RegisterCopyright() {
       );
 
       const submitCidTx = await cmoRegistry.populateTransaction.submitCid(
-        "test_cid",
+        cid,
         members,
         shares
       );
@@ -148,7 +161,22 @@ export default function RegisterCopyright() {
 
       <Layout>
         <h1 className="text-4xl font-bold">Register copyright</h1>
-        <div className="space-y-4 mt-8">
+        <div className="space-y-2 mt-8 p-4 flex flex-col w-full bg-white shadow-md">
+          <p className="font-bold">File</p>
+          <div
+            {...getRootProps()}
+            className="border-dashed border-2 p-4 bg-gray-100"
+          >
+            <input {...getInputProps()} />
+            {isDragActive ? (
+              <p>Drop the files here ...</p>
+            ) : (
+              <p>Drag 'n' drop some files here, or click to select files</p>
+            )}
+          </div>
+          {fileName !== "" ? <p>{fileName} uploaded!</p> : <></>}
+        </div>
+        <div className="space-y-4">
           {members.map((member, i) => {
             return (
               <div
