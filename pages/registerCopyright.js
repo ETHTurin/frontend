@@ -13,7 +13,7 @@ import IPFSUtils from "../utils/ipfs";
 export default function RegisterCopyright() {
   const [members, setMembers] = useState([]);
   const [shares, setShares] = useState([]);
-  const [safeContractInstance, setSafeContractInstance] = useState();
+  const [safeContractInstance, setSafeContractInstance] = useState(null);
 
   const [fileName, setFileName] = useState("");
   const [cid, setCid] = useState("");
@@ -161,7 +161,8 @@ export default function RegisterCopyright() {
 
       <Layout>
         <h1 className="text-4xl font-bold">Register copyright</h1>
-        <div className="space-y-2 mt-8 p-4 flex flex-col w-full bg-white shadow-md">
+        <h2 className="font-bold text-2xl mt-8 mb-2">Stuff to copyright</h2>
+        <div className="space-y-2 p-4 flex flex-col w-full bg-white shadow-md">
           <p className="font-bold">File</p>
           <div
             {...getRootProps()}
@@ -176,11 +177,12 @@ export default function RegisterCopyright() {
           </div>
           {fileName !== "" ? <p>{fileName} uploaded!</p> : <></>}
         </div>
+        <h2 className="font-bold text-2xl mt-8 mb-2">Owners</h2>
         <div className="space-y-4">
           {members.map((member, i) => {
             return (
               <div
-                className="p-4 flex w-full bg-white shadow-md space-x-8"
+                className="p-4 w-full bg-white shadow-md grid grid-cols-1 sm:grid-cols-2 gap-4"
                 key={i}
               >
                 <div className="flex flex-col flex-grow">
@@ -204,6 +206,9 @@ export default function RegisterCopyright() {
                     Shares
                   </label>
                   <input
+                    type="number"
+                    min="0"
+                    max="100"
                     id={`share${i}`}
                     className="p-4 bg-gray-100 mt-2"
                     onChange={(e) =>
@@ -220,31 +225,38 @@ export default function RegisterCopyright() {
           })}
         </div>
         <button
-          className="border-dashed border-2 border-gray-400 p-4 w-full mt-8"
+          className="border-dashed border-2 border-gray-400 p-4 w-full mt-4"
           onClick={() => {
             setMembers((members) => [...members, ""]);
-            setShares((shares) => [...shares, 0]);
+            setShares((shares) => [...shares, ""]);
           }}
         >
-          + Add member
+          + Add owner
         </button>
         {members.length > 0 ? (
-          <div className="space-x-4">
+          <div className="grid grid-cols-1 sm:grid-cols-6 gap-4 mt-4">
             <button
-              className="p-4 bg-purple-700 text-white mt-4"
+              className="p-4 bg-purple-700 text-white disabled:opacity-50"
               onClick={() => deployMultiSig()}
+              disabled={
+                members.filter((member) => member === "").length !== 0 ||
+                shares.filter((share) => share === "").length !== 0 ||
+                cid === ""
+              }
             >
               Deploy multisig
             </button>
             <button
-              className="p-4 bg-purple-700 text-white mt-4"
+              className="p-4 bg-purple-700 text-white disabled:opacity-50"
               onClick={() => signTx()}
+              disabled={safeContractInstance == null}
             >
               Sign tx
             </button>
             <button
-              className="p-4 bg-purple-700 text-white mt-4"
+              className="p-4 bg-purple-700 text-white disabled:opacity-50"
               onClick={() => confirmTx()}
+              disabled={safeContractInstance == null}
             >
               Confirm tx
             </button>

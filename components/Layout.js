@@ -19,7 +19,7 @@ function Layout(props) {
           target="_blank"
           rel="noopener noreferrer"
         >
-          Made with {"<3"} by ETHTurin
+          Made with 💜 by ETHTurin
         </a>
       </footer>
     </div>
