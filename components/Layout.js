@@ -9,6 +9,7 @@ function Layout(props) {
           <NavLink href="/buyCopyright">Buy copyright</NavLink>
         </nav>
       </header>
+      
       <main className="w-full flex-1 py-10 bg-gray-200">
         <div className="container mx-auto">{props.children}</div>
       </main>
