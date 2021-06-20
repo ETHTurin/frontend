@@ -6,7 +6,9 @@ import EthersSafe, {
   SafeTransactionDataPartial,
 } from "@gnosis.pm/safe-core-sdk";
 
+
 import GnosisSafeArtifact from "../contracts/GnosisSafe.json";
+import CMORegistryArtifact from "../contracts/CMORegistry.json";
 
 export default function RegisterCopyright() {
   const [members, setMembers] = useState([]);
@@ -110,7 +112,8 @@ export default function RegisterCopyright() {
             );
           })}
         </div>
-        <button
+        
+                <button
           className="border-dashed border-2 border-gray-400 p-4 w-full mt-8"
           onClick={() => setMembers((members) => [...members, { address: "" }])}
         >
