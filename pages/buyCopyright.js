@@ -9,11 +9,37 @@ import CMORegistryArtifact from "../contracts/CMORegistry.json";
 import Dropdown from 'react-dropdown';
 import 'react-dropdown/style.css';
 
+import {resolve} from "../utils/ipfs";
+
+import AlertFloat from "../components/AlertFloat";
+
+
 function RegisterCopyright() {
   const [cids, setCids] = useState("");
   const [balace, seBalance] = useState(0);
   const [buyCids, setBuyCids] = useState([]);
-  const [selectedCid, setSelectedCid] = useState("");
+  const [selectedCids, setSelectedCids] = useState([]);
+  const [alert, setAlert] = useState();
+
+async function updateBalance(){
+  try{    
+    const provider = new ethers.providers.Web3Provider(window.ethereum);
+
+    await provider.send("eth_requestAccounts", []);
+
+    const signer = provider.getSigner();
+    
+    const cmoRegistry = new ethers.Contract(
+      "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+      CMORegistryArtifact.abi,
+      signer
+    );
+
+   var balance = await cmoRegistry.balanceOf("0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",1)
+
+   seBalance(ethers.BigNumber.from(balance).toNumber())
+    }catch{}
+}
 
   useEffect(() => {
     async function getCids() {
@@ -37,36 +63,15 @@ function RegisterCopyright() {
       let tempCids = [];
       for (let i = 0; i < numOfCids; i++) {
         const tempCid = await cmoRegistry.rightsCids(i);
+
         tempCids.push(tempCid);
       }
 
       setCids(tempCids);
     }catch(err){console.error(err)}
-    try{    
-      const provider = new ethers.providers.Web3Provider(window.ethereum);
-  
-      await provider.send("eth_requestAccounts", []);
-  
-      const signer = provider.getSigner();
-      
-      const cmoRegistry = new ethers.Contract(
-        "0x5FbDB2315678afecb367f032d93F642f64180aa3",
-        CMORegistryArtifact.abi,
-        signer
-      );
-  
-     var balance = await cmoRegistry.balanceOf("0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",1)
-  
-     seBalance(ethers.BigNumber.from(balance).toNumber())
-      }catch{}
+    updateBalance()
     }
-
-
-
     getCids();
-  }, []);
-  useEffect(() => {
-
   }, []);
 
   return (
@@ -80,20 +85,27 @@ function RegisterCopyright() {
         <h1 className="text-4xl font-bold">Buy copyright</h1>
         <div className="flex flex-col space-y-4 mt-8">
           <p className="text-3xl text-right">{balace}.00 $ COPYRIGHTS TOTAL</p>
-          {buyCids.length === 0 ? <>Still no copyrights!</> : <>
+          {buyCids.length !== 0 &&
+          <>
           {
-            buyCids.map((cidSave)=> {
-              return <div className="bg-white flex justify-around align-middle p-10">
-                <p>{cidSave.toUpperCase()}</p> 
+            buyCids.map((cidSave,index)=> {
+              return <div className="bg-white flex  p-10">
+                <Dropdown className="flex-grow" options= {cids} onChange={(value) => {
+                  
+                  setBuyCids(buyCids => buyCids.map((buyCid, i) => i !== index ? buyCid : value.value))
+                }} value={cidSave} placeholder="Select an option" />
                 
-                <button className="bg-red-500 p-4 border-4 text-white" onClick={() => {
-                  var index = buyCids.indexOf(cidSave)
-              if (index === -1) {
-                var cids = buyCids.splice(index, 1);
-                setBuyCids(cids);
+                <button className="border-2 border-purple-700 p-4 text-purple-700" onClick={ () => {
+                  window.open(resolve(cidSave))
               }
-              console.log(buyCids)
-                console.log("remove" + cids)
+              }>
+                  Show content
+                  </button>
+                  
+                  <button className="bg-red-500 p-4 border-4 text-white" onClick={() => {
+                  // var buyCidsAux = buyCids.filter((buyCid) => {buyCids !== cidSave})
+                  
+                  setBuyCids(buyCids => buyCids.filter((_, i) => i !== index))
               }
               }>
                   REMOVE
@@ -103,31 +115,18 @@ function RegisterCopyright() {
           }
           </>
           }
-          <Dropdown options= {cids} onChange={(value) => { setSelectedCid(value.value) }} value={selectedCid} placeholder="Select an option" />
-
+          
           <button
           className="border-dashed border-2 border-gray-400 p-4 w-full mt-8"
-          onClick={() => {
-            if(selectedCid){
-              var index = cids.indexOf(selectedCid)
-              console.log(index, selectedCid)
-              if (index !== -1) {        
-              let cids = buyCids
-              cids.push(selectedCid)
-              
-                    
-                setBuyCids(cids)
-                setSelectedCid("")
-              }
-
-            }
+          onClick={() => {      
+              setBuyCids(buyCids => [...buyCids, ""])
           }}
         >
-          + Add member
+          + Add copyright
         </button>
         {buyCids.length > 0 ?
         <div className="flex justify-center">
-          <button className="bg-yellow-500 p-4 border-4 text-white" onClick={async () => {
+          <button className="bg-purple-700 p-4 border-4 text-white" onClick={async () => {
                 // payRights
                 
                 const provider = new ethers.providers.Web3Provider(window.ethereum);
@@ -142,64 +141,30 @@ function RegisterCopyright() {
                 );
 
                 console.log(buyCids)
+              try{
+                var payRightsTx = await cmoRegistry.payRights(buyCids, {value: 1000})
 
-                var a = await cmoRegistry.payRights(buyCids, {value: 1000})
-                console.log(a)
-              }}>BUY COPYRIGHT LICESE</button>
+                const payRightsTxReceipt = await payRightsTx.wait()
+                if(payRightsTxReceipt){
+                setAlert({alertHeader:"PAGATO <3", alertBody:"PAGAMENTO AVVENUTO CON SUCCESSO" ,alertColor:"bg-green-500 text-white p-4 text-center"})
+
+                updateBalance()
+                setBuyCids([])
+              }
+              }catch(err){
+                console.error(err)
+                setAlert({alertHeader:"ERRORE", alertBody:"ERRORE NEL PAGAMENTO" ,alertColor:"bg-red-500 text-white p-4 text-center"})
+
+              }}}>BUY COPYRIGHT LICENSE</button>
               </div>
               : null
-              
         }
-          {/* <button onClick={async () => {    
-            const provider = new ethers.providers.Web3Provider(window.ethereum);
 
-            await provider.send("eth_requestAccounts", []);
-
-            const signer = provider.getSigner();
-
-            const cmoRegistry = new ethers.Contract(
-              "0x5FbDB2315678afecb367f032d93F642f64180aa3",
-              CMORegistryArtifact.abi,
-              signer
-            );
-
-            const submitCidTx = await cmoRegistry.submitCid(
-            "test_cid_2",
-            ["0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266","0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"],
-            [50, 50]
-          );
-          
-          console.log(submitCidTx)
-        }
-          }>ciao</button>
-          <button onClick={async () => {  
-            console.log("---> ")
-            const provider = new ethers.providers.Web3Provider(window.ethereum);
-
-            await provider.send("eth_requestAccounts", []);
-
-            const signer = provider.getSigner();
-
-            const cmoRegistry = new ethers.Contract(
-              "0x5FbDB2315678afecb367f032d93F642f64180aa3",
-              CMORegistryArtifact.abi,
-              signer
-            );
-
-            try{
-            const numOfCids = await cmoRegistry.numOfCids();
-              console.log(numOfCids)
-            let tempCids = [];
-            for (let i = 0; i < numOfCids; i++) {
-              const tempCid = await cmoRegistry.rightsCids(i);
-              tempCids.push(tempCid);
-            }
-
-            setCids(tempCids);
-            console.log("---> ", tempCids)
-          }catch(err){console.error(err)}
-        }
-          }>addio</button> */}
+        <textBox></textBox>
+        
+        {alert &&
+        <AlertFloat alert={alert}/>
+      }
         </div>
       </Layout>
     </>

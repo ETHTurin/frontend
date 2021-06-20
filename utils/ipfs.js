@@ -20,7 +20,7 @@ async function upload(buffer) {
   }
 }
 
-async function resolve(cid) {
+function resolve(cid) {
   try {
     return `https://ipfs.io/ipfs/${cid}`;
   } catch (error) {
