@@ -39,6 +39,8 @@ export default function RegisterCopyright() {
       signer
     );
 
+    console.log(process.env.NEXT_PUBLIC_CMO_CONTRACT_ADDRESS);
+
     try {
       let _safeContractInstance = await safeContractFactory.deploy();
 
@@ -75,8 +77,10 @@ export default function RegisterCopyright() {
 
       const signer = provider.getSigner();
 
+      console.log(safeContractInstance);
+
       const cmoRegistry = new ethers.Contract(
-        "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+        process.env.NEXT_PUBLIC_CMO_CONTRACT_ADDRESS,
         CMORegistryArtifact.abi,
         signer
       );
@@ -119,7 +123,7 @@ export default function RegisterCopyright() {
       const signer = provider.getSigner();
 
       const cmoRegistry = new ethers.Contract(
-        "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+        process.env.NEXT_PUBLIC_CMO_CONTRACT_ADDRESS,
         CMORegistryArtifact.abi,
         signer
       );
@@ -251,14 +255,14 @@ export default function RegisterCopyright() {
               onClick={() => signTx()}
               disabled={safeContractInstance == null}
             >
-              Sign tx
+              Sign multisig
             </button>
             <button
               className="p-4 bg-purple-700 text-white disabled:opacity-50"
               onClick={() => confirmTx()}
               disabled={safeContractInstance == null}
             >
-              Confirm tx
+              Confirm deposit
             </button>
           </div>
         ) : (
