@@ -181,6 +181,14 @@ export default function RegisterCopyright() {
           </div>
           {fileName !== "" ? <p>{fileName} uploaded!</p> : <></>}
         </div>
+
+        {fileName !== "" ? (
+          <div className="mt-8 p-4 w-full bg-white shadow-md grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <p>Passo</p>
+          </div>
+        ) : (
+          <></>
+        )}
         <h2 className="font-bold text-2xl mt-8 mb-2">Owners</h2>
         <div className="space-y-4">
           {members.map((member, i) => {
