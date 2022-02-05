@@ -7,9 +7,13 @@ import Dropdown from "react-dropdown";
 import "react-dropdown/style.css";
 import { resolve } from "../utils/ipfs";
 import AlertFloat from "../components/AlertFloat";
+import {
+  capitalizeFirstLetterStr,
+  capitalizeFirstLetterArr,
+} from "../utils/capitalizeFirstLetter";
 
 function PayCopyright({ data }) {
-  const [cids, setCids] = useState([]);
+  const [cids, setCids] = useState([data]);
   const [balance, seBalance] = useState(0);
   const [buyCids, setBuyCids] = useState([]);
   const [selectedCids, setSelectedCids] = useState([]);
@@ -81,20 +85,57 @@ function PayCopyright({ data }) {
             <>
               {buyCids.map((cidSave, index) => {
                 return (
-                  <div className="bg-white flex  p-10">
+                  <div className="bg-white flex justify-between p-10 w-full">
                     <Dropdown
-                      className="flex-grow"
+                      className="w-3/4"
                       options={data.map((d) => {
-                        const { title, duration, year, composers, lyricists } =
-                          d;
+                        const {
+                          title,
+                          duration,
+                          year,
+                          description,
+                          composers,
+                          lyricists,
+                          content,
+                        } = d;
                         return (
-                          <ul>
-                            <li className="font-bold">{title}</li>
-                            <li className="font-bold">{duration}</li>
-                            <li className="font-bold">{year}</li>
-                            <li className="font-bold">{composers}</li>
-                            <li className="font-bold">{lyricists}</li>
-                          </ul>
+                          <div className="flex  flex-col">
+                            <div className="font-bold w-full flex justify-between">
+                              {capitalizeFirstLetterStr(title)}
+                            </div>
+                            <div className="flex w-full justify-between">
+                              <div className=" font-thin flex flex-col">
+                                <div className="uppercase text-xs font-normal text-gray-500">
+                                  Duration
+                                </div>{" "}
+                                {duration} min.
+                              </div>
+                              <div className=" font-thin flex flex-col">
+                                <div className="uppercase text-xs font-normal text-gray-500">
+                                  Date
+                                </div>{" "}
+                                {year}
+                              </div>
+                              <div className=" font-thin flex flex-col">
+                                <div className="uppercase text-xs font-normal text-gray-500">
+                                  Composers
+                                </div>
+                                {capitalizeFirstLetterArr(composers)}
+                              </div>
+                              <div className=" font-thin flex flex-col">
+                                <div className="uppercase text-xs font-normal text-gray-500">
+                                  Lyricists
+                                </div>{" "}
+                                {lyricists}
+                              </div>
+                              <div className=" font-thin flex flex-col">
+                                <div className="uppercase text-xs font-normal text-gray-500">
+                                  Description
+                                </div>
+                                {capitalizeFirstLetterStr(description)}
+                              </div>
+                            </div>
+                          </div>
                         );
                       })}
                       onChange={(value) => {
@@ -107,25 +148,27 @@ function PayCopyright({ data }) {
                       value={cidSave}
                       placeholder="Select an option"
                     />
-                    <button
-                      className="border-2 border-purple-700 p-4 text-purple-700"
-                      onClick={() => {
-                        window.open(resolve(cidSave));
-                      }}
-                    >
-                      Show content
-                    </button>
-                    <button
-                      className="bg-red-500 p-4 border-4 text-white"
-                      onClick={() => {
-                        // var buyCidsAux = buyCids.filter((buyCid) => {buyCids !== cidSave})
-                        setBuyCids((buyCids) =>
-                          buyCids.filter((_, i) => i !== index)
-                        );
-                      }}
-                    >
-                      REMOVE
-                    </button>
+                    <div className="w-1/4 flex justify-around">
+                      <button
+                        className=" border border-purple-700 p-2 text-purple-700 hover:bg-purple-700 hover:text-white hover:border rounded-2xl"
+                        onClick={() => {
+                          window.open(resolve(cidSave));
+                        }}
+                      >
+                        Show content
+                      </button>
+                      <button
+                        className="border border-red-500 p-2 text-red-500 hover:bg-red-500 hover:text-white rounded-2xl hover:border"
+                        onClick={() => {
+                          // var buyCidsAux = buyCids.filter((buyCid) => {buyCids !== cidSave})
+                          setBuyCids((buyCids) =>
+                            buyCids.filter((_, i) => i !== index)
+                          );
+                        }}
+                      >
+                        Remove
+                      </button>
+                    </div>
                   </div>
                 );
               })}
