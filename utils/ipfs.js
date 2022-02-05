@@ -4,7 +4,8 @@ import IPFS from "ipfs";
 let node;
 
 (async () => {
-  node = await IPFS.create();
+  node = create("https://api.ipfs.tapoon.house/");
+
   const version = await node.version();
 
   console.log("Version:", version.version);
@@ -12,7 +13,7 @@ let node;
 
 async function upload(buffer) {
   try {
-    const file = await node.add({ content: buffer });
+    const file = await node.add({ content: JSON.stringify(buffer) });
 
     return file.path;
   } catch (error) {
