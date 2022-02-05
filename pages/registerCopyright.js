@@ -14,7 +14,6 @@ export default function RegisterCopyright() {
   const [members, setMembers] = useState([]);
   const [shares, setShares] = useState([]);
   const [safeContractInstance, setSafeContractInstance] = useState(null);
-
   const [fileName, setFileName] = useState("");
   const [cid, setCid] = useState("");
 

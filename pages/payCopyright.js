@@ -1,21 +1,16 @@
 import Head from "next/head";
 import Layout from "../components/Layout";
-
 import { ethers } from "ethers";
 import { useEffect, useState } from "react";
-
 import CMORegistryArtifact from "../contracts/CMORegistry.json";
-
 import Dropdown from "react-dropdown";
 import "react-dropdown/style.css";
-
 import { resolve } from "../utils/ipfs";
-
 import AlertFloat from "../components/AlertFloat";
 
-function PayCopyright() {
-  const [cids, setCids] = useState("");
-  const [balace, seBalance] = useState(0);
+function PayCopyright({ data }) {
+  const [cids, setCids] = useState([]);
+  const [balance, seBalance] = useState(0);
   const [buyCids, setBuyCids] = useState([]);
   const [selectedCids, setSelectedCids] = useState([]);
   const [alert, setAlert] = useState();
@@ -23,21 +18,15 @@ function PayCopyright() {
   async function updateBalance() {
     try {
       const provider = new ethers.providers.Web3Provider(window.ethereum);
-
       await provider.send("eth_requestAccounts", []);
-
       const signer = provider.getSigner();
-
       const cmoRegistry = new ethers.Contract(
         process.env.NEXT_PUBLIC_CMO_CONTRACT_ADDRESS,
         CMORegistryArtifact.abi,
         signer
       );
-
       const signerAddress = await signer.getAddress();
-
       var balance = await cmoRegistry.balanceOf(signerAddress, 1);
-
       seBalance(ethers.BigNumber.from(balance).toNumber());
     } catch {}
   }
@@ -45,28 +34,30 @@ function PayCopyright() {
   useEffect(() => {
     async function getCids() {
       const provider = new ethers.providers.Web3Provider(window.ethereum);
-
       await provider.send("eth_requestAccounts", []);
-
       const signer = provider.getSigner();
-
       const cmoRegistry = new ethers.Contract(
         process.env.NEXT_PUBLIC_CMO_CONTRACT_ADDRESS,
         CMORegistryArtifact.abi,
         signer
       );
-
       try {
         const numOfCids = await cmoRegistry.numOfCids();
         console.log(numOfCids);
-
-        let tempCids = [];
+        let tempCids = {
+          title: "Test",
+          duration: 3.3,
+          year: 2022,
+          description: "A cool song",
+          composers: ["david bowie", "red hot "],
+          lyricists: ["Mogol"],
+          tags: ["bella", "canzone"],
+          content: "encode del brano",
+        };
         for (let i = 0; i < numOfCids; i++) {
           const tempCid = await cmoRegistry.rightsCids(i);
-
           tempCids.push(tempCid);
         }
-
         setCids(tempCids);
       } catch (err) {
         console.error(err);
@@ -82,11 +73,10 @@ function PayCopyright() {
         <title>CMOFrontend</title>
         <link rel="icon" href="/favicon.ico" />
       </Head>
-
       <Layout>
         <h1 className="text-4xl font-bold">Pay copyright</h1>
         <div className="flex flex-col space-y-4 mt-8">
-          <p className="text-3xl text-right">{balace}.00 $ token total</p>
+          <p className="text-3xl text-right">{balance}.00 $ token total</p>
           {buyCids.length !== 0 ? (
             <>
               {buyCids.map((cidSave, index) => {
@@ -105,7 +95,6 @@ function PayCopyright() {
                       value={cidSave}
                       placeholder="Select an option"
                     />
-
                     <button
                       className="border-2 border-purple-700 p-4 text-purple-700"
                       onClick={() => {
@@ -114,12 +103,10 @@ function PayCopyright() {
                     >
                       Show content
                     </button>
-
                     <button
                       className="bg-red-500 p-4 border-4 text-white"
                       onClick={() => {
                         // var buyCidsAux = buyCids.filter((buyCid) => {buyCids !== cidSave})
-
                         setBuyCids((buyCids) =>
                           buyCids.filter((_, i) => i !== index)
                         );
@@ -200,6 +187,18 @@ function PayCopyright() {
       </Layout>
     </>
   );
+}
+
+export async function getServerSideProps() {
+  const cids = ["QmQy6xmJhrcC5QLboAcGFcAE1tC8CrwDVkrHdEYJkLscrQ"];
+  for (let i = 0; i < cids.length; i++) {
+    const data = await fetch(`https://ipfs.tapoon.house/${cids[i]}`);
+    const res = await data.json();
+    console.log(res);
+  }
+  return {
+    props: { data },
+  };
 }
 
 export default PayCopyright;

@@ -1,10 +1,9 @@
 import { create } from "ipfs-http-client";
-import IPFS from "ipfs";
 
 let node;
 
 (async () => {
-  node = await IPFS.create();
+  node = create("https://ipfs.tapoon.house/");
   const version = await node.version();
 
   console.log("Version:", version.version);
