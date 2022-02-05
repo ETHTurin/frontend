@@ -84,7 +84,19 @@ function PayCopyright({ data }) {
                   <div className="bg-white flex  p-10">
                     <Dropdown
                       className="flex-grow"
-                      options={cids}
+                      options={data.map((d) => {
+                        const { title, duration, year, composers, lyricists } =
+                          d;
+                        return (
+                          <ul>
+                            <li className="font-bold">{title}</li>
+                            <li className="font-bold">{duration}</li>
+                            <li className="font-bold">{year}</li>
+                            <li className="font-bold">{composers}</li>
+                            <li className="font-bold">{lyricists}</li>
+                          </ul>
+                        );
+                      })}
                       onChange={(value) => {
                         setBuyCids((buyCids) =>
                           buyCids.map((buyCid, i) =>
@@ -190,12 +202,24 @@ function PayCopyright({ data }) {
 }
 
 export async function getServerSideProps() {
-  const cids = ["QmQy6xmJhrcC5QLboAcGFcAE1tC8CrwDVkrHdEYJkLscrQ"];
-  for (let i = 0; i < cids.length; i++) {
-    const data = await fetch(`https://ipfs.tapoon.house/${cids[i]}`);
-    const res = await data.json();
-    console.log(res);
-  }
+  // const cids = ["QmQy6xmJhrcC5QLboAcGFcAE1tC8CrwDVkrHdEYJkLscrQ"];
+  // for (let i = 0; i < cids.length; i++) {
+  //   const data = await fetch(`https://ipfs.tapoon.house/${cids[i]}`);
+  //   const res = await data.json();
+  //   console.log(res);
+  // }
+  let data = [
+    {
+      title: "Test",
+      duration: 3.3,
+      year: 2022,
+      description: "A cool song",
+      composers: ["david bowie", "red hot "],
+      lyricists: ["Mogol"],
+      tags: ["bella", "canzone"],
+      content: "encode del brano",
+    },
+  ];
   return {
     props: { data },
   };
