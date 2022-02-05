@@ -1,5 +1,4 @@
 import { create } from "ipfs-http-client";
-import IPFS from "ipfs";
 
 let node;
 
