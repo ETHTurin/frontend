@@ -5,7 +5,6 @@ let node;
 (async () => {
   node = create("https://ipfs.tapoon.house/");
   const version = await node.version();
-
   console.log("Version:", version.version);
 })();
 
