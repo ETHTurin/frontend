@@ -40,7 +40,7 @@ function PayCopyright() {
 
       seBalance(ethers.BigNumber.from(balance).toNumber());
     } catch (e) {
-      throw new Erroe("Something went wrong");
+      throw new Error("Something went wrong");
     }
   }
 
