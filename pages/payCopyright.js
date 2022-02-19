@@ -22,7 +22,7 @@ function PayCopyright() {
 
   async function updateBalance() {
     try {
-      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const provider = await new ethers.providers.Web3Provider(window.ethereum);
 
       await provider.send("eth_requestAccounts", []);
 
@@ -39,12 +39,14 @@ function PayCopyright() {
       var balance = await cmoRegistry.balanceOf(signerAddress, 1);
 
       seBalance(ethers.BigNumber.from(balance).toNumber());
-    } catch {}
+    } catch (e) {
+      throw new Erroe("Something went wrong");
+    }
   }
 
   useEffect(() => {
     async function getCids() {
-      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const provider = await new ethers.providers.Web3Provider(window.ethereum);
 
       await provider.send("eth_requestAccounts", []);
 
