@@ -3,17 +3,38 @@ import Layout from "../components/Layout";
 import { ethers } from "ethers";
 import { useEffect, useState } from "react";
 import CMORegistryArtifact from "../contracts/CMORegistry.json";
-import Dropdown from "react-dropdown";
-import "react-dropdown/style.css";
 import { resolve } from "../utils/ipfs";
 import AlertFloat from "../components/AlertFloat";
-import {
-  capitalizeFirstLetterStr,
-  capitalizeFirstLetterArr,
-} from "../utils/capitalizeFirstLetter";
+import Combobox from "../components/Combobox";
 
 function PayCopyright({ data }) {
-  const [cids, setCids] = useState([data]);
+  const items = data.map((item) => {
+    return {
+      label: `${item.title}`,
+      value: `${item.content}`,
+      component: (
+        <div className="flex flex-col">
+          <p className="font-bold">{item.title}</p>
+          <div className="grid grid-cols-6">
+            <p className="uppercase text-sm text-gray-700">Duration</p>
+            <p className="uppercase text-sm text-gray-700">Year</p>
+            <p className="uppercase text-sm text-gray-700">Description</p>
+            <p className="uppercase text-sm text-gray-700">Composers</p>
+            <p className="uppercase text-sm text-gray-700">Lyricists</p>
+            <p className="uppercase text-sm text-gray-700">Tags</p>
+            <p>{item.duration} min</p>
+            <p>{item.year}</p>
+            <p>{item.description}</p>
+            <p>{item.composers.join(", ")}</p>
+            <p>{item.lyricists.join(", ")}</p>
+            <p>{item.tags.join(", ")}</p>
+          </div>
+        </div>
+      ),
+    };
+  });
+
+  const [cids, setCids] = useState([]);
   const [balance, seBalance] = useState(0);
   const [buyCids, setBuyCids] = useState([]);
   const [selectedCids, setSelectedCids] = useState([]);
@@ -36,39 +57,7 @@ function PayCopyright({ data }) {
   }
 
   useEffect(() => {
-    async function getCids() {
-      const provider = new ethers.providers.Web3Provider(window.ethereum);
-      await provider.send("eth_requestAccounts", []);
-      const signer = provider.getSigner();
-      const cmoRegistry = new ethers.Contract(
-        process.env.NEXT_PUBLIC_CMO_CONTRACT_ADDRESS,
-        CMORegistryArtifact.abi,
-        signer
-      );
-      try {
-        const numOfCids = await cmoRegistry.numOfCids();
-        console.log(numOfCids);
-        let tempCids = {
-          title: "Test",
-          duration: 3.3,
-          year: 2022,
-          description: "A cool song",
-          composers: ["david bowie", "red hot "],
-          lyricists: ["Mogol"],
-          tags: ["bella", "canzone"],
-          content: "encode del brano",
-        };
-        for (let i = 0; i < numOfCids; i++) {
-          const tempCid = await cmoRegistry.rightsCids(i);
-          tempCids.push(tempCid);
-        }
-        setCids(tempCids);
-      } catch (err) {
-        console.error(err);
-      }
-      updateBalance();
-    }
-    getCids();
+    updateBalance();
   }, []);
 
   return (
@@ -80,95 +69,45 @@ function PayCopyright({ data }) {
       <Layout>
         <h1 className="text-4xl font-bold">Pay copyright</h1>
         <div className="flex flex-col space-y-4 mt-8">
-          <p className="text-3xl text-right">{balance}.00 $ token total</p>
+          <p className="text-3xl text-right">{balance}.00 $CMO balance</p>
           {buyCids.length !== 0 ? (
             <>
               {buyCids.map((cidSave, index) => {
                 return (
-                  <div className="bg-white flex justify-between p-10 w-full">
-                    <Dropdown
-                      className="w-3/4"
-                      options={data.map((d) => {
-                        const {
-                          title,
-                          duration,
-                          year,
-                          description,
-                          composers,
-                          lyricists,
-                          content,
-                        } = d;
-                        return (
-                          <div className="flex  flex-col">
-                            <div className="font-bold w-full flex justify-between">
-                              {capitalizeFirstLetterStr(title)}
-                            </div>
-                            <div className="flex w-full justify-between">
-                              <div className=" font-thin flex flex-col">
-                                <div className="uppercase text-xs font-normal text-gray-500">
-                                  Duration
-                                </div>{" "}
-                                {duration} min.
-                              </div>
-                              <div className=" font-thin flex flex-col">
-                                <div className="uppercase text-xs font-normal text-gray-500">
-                                  Date
-                                </div>{" "}
-                                {year}
-                              </div>
-                              <div className=" font-thin flex flex-col">
-                                <div className="uppercase text-xs font-normal text-gray-500">
-                                  Composers
-                                </div>
-                                {capitalizeFirstLetterArr(composers)}
-                              </div>
-                              <div className=" font-thin flex flex-col">
-                                <div className="uppercase text-xs font-normal text-gray-500">
-                                  Lyricists
-                                </div>{" "}
-                                {lyricists}
-                              </div>
-                              <div className=" font-thin flex flex-col">
-                                <div className="uppercase text-xs font-normal text-gray-500">
-                                  Description
-                                </div>
-                                {capitalizeFirstLetterStr(description)}
-                              </div>
-                            </div>
-                          </div>
-                        );
-                      })}
-                      onChange={(value) => {
-                        setBuyCids((buyCids) =>
-                          buyCids.map((buyCid, i) =>
-                            i !== index ? buyCid : value.value
-                          )
-                        );
-                      }}
-                      value={cidSave}
-                      placeholder="Select an option"
-                    />
-                    <div className="w-1/4 flex justify-around">
-                      <button
-                        className=" border border-purple-700 p-2 text-purple-700 hover:bg-purple-700 hover:text-white hover:border rounded-2xl"
-                        onClick={() => {
-                          window.open(resolve(cidSave));
-                        }}
-                      >
-                        Show content
-                      </button>
-                      <button
-                        className="border border-red-500 p-2 text-red-500 hover:bg-red-500 hover:text-white rounded-2xl hover:border"
-                        onClick={() => {
-                          // var buyCidsAux = buyCids.filter((buyCid) => {buyCids !== cidSave})
+                  <div className="bg-white flex justify-between p-8 gap-4 w-full">
+                    <div className="flex-grow">
+                      <Combobox
+                        items={items}
+                        handleSelectedItemChange={(item) => {
                           setBuyCids((buyCids) =>
-                            buyCids.filter((_, i) => i !== index)
+                            buyCids.map((buyCid, i) =>
+                              i !== index ? buyCid : item
+                            )
                           );
                         }}
-                      >
-                        Remove
-                      </button>
+                        selectedItem={cidSave}
+                        placeholder="Select an option"
+                      />
                     </div>
+                    <button
+                      className=" border border-purple-700 p-2 text-purple-700 hover:bg-purple-700 hover:text-white hover:border"
+                      onClick={() => {
+                        window.open(resolve(cidSave.value));
+                      }}
+                    >
+                      Show content
+                    </button>
+                    <button
+                      className="border border-red-500 p-2 text-red-500 hover:bg-red-500 hover:text-white hover:border"
+                      onClick={() => {
+                        // var buyCidsAux = buyCids.filter((buyCid) => {buyCids !== cidSave})
+                        setBuyCids((buyCids) =>
+                          buyCids.filter((_, i) => i !== index)
+                        );
+                      }}
+                    >
+                      Remove
+                    </button>
                   </div>
                 );
               })}
@@ -186,7 +125,7 @@ function PayCopyright({ data }) {
             + Add copyright
           </button>
           {buyCids.length > 0 ? (
-            <div className="flex justify-center">
+            <div className="flex">
               <button
                 className="bg-purple-700 p-4 border-4 text-white"
                 onClick={async () => {
@@ -203,7 +142,6 @@ function PayCopyright({ data }) {
                     signer
                   );
 
-                  console.log(buyCids);
                   try {
                     var payRightsTx = await cmoRegistry.payRights(buyCids, {
                       value: 1000,
@@ -235,8 +173,6 @@ function PayCopyright({ data }) {
             </div>
           ) : null}
 
-          <textBox></textBox>
-
           {alert && <AlertFloat alert={alert} />}
         </div>
       </Layout>
@@ -245,24 +181,31 @@ function PayCopyright({ data }) {
 }
 
 export async function getServerSideProps() {
-  // const cids = ["QmQy6xmJhrcC5QLboAcGFcAE1tC8CrwDVkrHdEYJkLscrQ"];
-  // for (let i = 0; i < cids.length; i++) {
-  //   const data = await fetch(`https://ipfs.tapoon.house/${cids[i]}`);
-  //   const res = await data.json();
-  //   console.log(res);
-  // }
-  let data = [
-    {
-      title: "Test",
-      duration: 3.3,
-      year: 2022,
-      description: "A cool song",
-      composers: ["david bowie", "red hot "],
-      lyricists: ["Mogol"],
-      tags: ["bella", "canzone"],
-      content: "encode del brano",
-    },
-  ];
+  let provider;
+  if (process.env.RPC_NETWORK === "goerli")
+    provider = new ethers.providers.InfuraProvider("goerli", {
+      projectId: process.env.RPC_ID,
+      projectSecret: process.env.RPC_SECRET,
+    });
+  else provider = new ethers.providers.JsonRpcProvider();
+
+  const cmoRegistry = new ethers.Contract(
+    process.env.NEXT_PUBLIC_CMO_CONTRACT_ADDRESS,
+    CMORegistryArtifact.abi,
+    provider
+  );
+
+  const cids = await cmoRegistry.getRightsCids();
+
+  const data = await Promise.all(
+    cids.map(async (cid) => {
+      const data = await fetch(`https://ipfs.tapoon.house/ipfs/${cid}`);
+      const res = await data.json();
+
+      return res;
+    })
+  );
+
   return {
     props: { data },
   };

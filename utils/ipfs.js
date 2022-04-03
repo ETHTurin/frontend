@@ -3,12 +3,8 @@ import { create } from "ipfs-http-client";
 let node;
 
 (async () => {
-<<<<<<< HEAD
-  node = create("https://ipfs.tapoon.house/");
-=======
   node = create("https://api.ipfs.tapoon.house/");
 
->>>>>>> b1e4052735903a89477bb478b8feaf385fda5443
   const version = await node.version();
   console.log("Version:", version.version);
 })();
@@ -25,7 +21,7 @@ async function upload(buffer) {
 
 function resolve(cid) {
   try {
-    return `https://ipfs.io/ipfs/${cid}`;
+    return `https://ipfs.tapoon.house/ipfs/${cid}`;
   } catch (error) {
     throw error;
   }

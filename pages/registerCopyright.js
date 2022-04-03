@@ -25,8 +25,8 @@ export default function RegisterCopyright() {
   const [members, setMembers] = useState([]);
   const [shares, setShares] = useState([]);
 
-  const [lyricistsLastName, setLyricistsLastName] = useState([]);
-  const [lyricistsFirstName, setLyricistsFirstName] = useState([]);
+  const [lyricists, setLyricists] = useState([]);
+  const [composers, setComposers] = useState([]);
 
   const [tags, setTags] = useState([]);
 
@@ -40,10 +40,10 @@ export default function RegisterCopyright() {
   }, [file]);
   const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop });
 
-  function getBase64(file) {
+  function getArrayBuffer(file) {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
-      reader.readAsDataURL(file);
+      reader.readAsArrayBuffer(file);
       reader.onload = () => {
         console.log("passo");
         return resolve(reader.result);
@@ -56,17 +56,21 @@ export default function RegisterCopyright() {
   }
 
   async function deployMultiSig() {
-    console.log("ciduhbwiqudwqiuwdqbwdq", await getBase64(file));
-    const _cid = await IPFSUtils.upload({
-      title,
-      description,
-      duration,
-      year,
-      lyricistsLastName,
-      lyricistsFirstName,
-      tags,
-      content: await getBase64(file),
-    });
+    const fileContent = await getArrayBuffer(file);
+
+    const fileCid = await IPFSUtils.upload(fileContent);
+    const _cid = await IPFSUtils.upload(
+      JSON.stringify({
+        title,
+        description,
+        duration,
+        year,
+        lyricists,
+        composers,
+        tags,
+        content: fileCid,
+      })
+    );
 
     console.log("cid", _cid);
 
@@ -122,8 +126,7 @@ export default function RegisterCopyright() {
       const signer = provider.getSigner();
 
       const cmoRegistry = new ethers.Contract(
-        // process.env.NEXT_PUBLIC_CMO_CONTRACT_ADDRESS,
-        "0x7Ce73F8f636C6bD3357A0A8a59e0ab6462C955B0",
+        process.env.NEXT_PUBLIC_CMO_CONTRACT_ADDRESS,
         CMORegistryArtifact.abi,
         signer
       );
@@ -166,8 +169,7 @@ export default function RegisterCopyright() {
       const signer = provider.getSigner();
 
       const cmoRegistry = new ethers.Contract(
-        // process.env.NEXT_PUBLIC_CMO_CONTRACT_ADDRESS,
-        "0x7Ce73F8f636C6bD3357A0A8a59e0ab6462C955B0",
+        process.env.NEXT_PUBLIC_CMO_CONTRACT_ADDRESS,
         CMORegistryArtifact.abi,
         signer
       );
@@ -229,7 +231,6 @@ export default function RegisterCopyright() {
                 <p className="text-bold text-2xl">{file.name} uploaded!</p>
 
                 <BsFillTrash2Fill
-                  className="w-8 h-8"
                   className="cursor-pointer w-8 h-8"
                   onClick={() => {
                     setFile("");
@@ -280,72 +281,39 @@ export default function RegisterCopyright() {
                 <div>
                   <h2 className="font-bold text-2xl mt-8 mb-2">Lyricists</h2>
                   <div className="space-y-4">
-                    {lyricistsLastName.map((lyricist, i) => {
+                    {lyricists.map((lyricist, i) => {
                       return (
-                        <div
-                          className="p-4 w-full bg-white shadow-md grid grid-cols-1 sm:grid-cols-2 gap-4"
-                          key={i}
-                        >
+                        <div className="flex items-end">
                           <div className="flex flex-col flex-grow">
                             <label
                               for={`lyricists_last_name_${i}`}
                               className="font-bold"
                             >
-                              Last Name
+                              Lyricist
                             </label>
                             <input
                               id={`lyricists_last_name_input_${i}`}
                               className="p-4 bg-gray-100 mt-2"
                               onChange={(e) =>
-                                setLyricistsLastName((lyricistsLastName) =>
-                                  lyricistsLastName.map(
-                                    (lyricistLastName, lyricistIndex) =>
-                                      i === lyricistIndex
-                                        ? e.target.value
-                                        : lyricistLastName
+                                setLyricists((lyricists) =>
+                                  lyricists.map((lyricist, lyricistIndex) =>
+                                    i === lyricistIndex
+                                      ? e.target.value
+                                      : lyricist
                                   )
                                 )
                               }
                             />
                           </div>
 
-                          <div className="flex flex-col flex-grow">
-                            <label
-                              for={`lyricists_first_name_${i}`}
-                              className="font-bold"
-                            >
-                              First name
-                            </label>
-                            <input
-                              id={`lyricists_first_name_input_${i}`}
-                              className="p-4 bg-gray-100 mt-2"
-                              onChange={(e) =>
-                                setLyricistsFirstName((lyricistsFirstName) =>
-                                  lyricistsFirstName.map(
-                                    (lyricistFirstName, lyricistIndex) =>
-                                      i === lyricistIndex
-                                        ? e.target.value
-                                        : lyricistFirstName
-                                  )
-                                )
-                              }
-                            />
-                          </div>
-                          <div className="flex justify-center col-start-2">
+                          <div className="flex p-2">
                             <BsFillTrash2Fill
                               id={`img${i}`}
-                              className="w-8 h-8"
                               className="cursor-pointer w-8 h-8"
                               onClick={() => {
-                                setLyricistsLastName((lyricistsLastName) =>
-                                  lyricistsLastName.filter(
-                                    (lyricistLastName, lyricistIndex) =>
-                                      i !== lyricistIndex
-                                  )
-                                );
-                                setLyricistsFirstName((lyricistsFirstName) =>
-                                  lyricistsFirstName.filter(
-                                    (lyricistFirstName, lyricistIndex) =>
+                                setLyricists((lyricists) =>
+                                  lyricists.filter(
+                                    (lyricist, lyricistIndex) =>
                                       i !== lyricistIndex
                                   )
                                 );
@@ -356,31 +324,75 @@ export default function RegisterCopyright() {
                       );
                     })}
                   </div>
+
                   <button
                     className="border-dashed border-2 border-gray-400 p-4 w-full mt-4"
-                    onClick={() => {
-                      setLyricistsLastName((lyricistsLastName) => [
-                        ...lyricistsLastName,
-                        "",
-                      ]);
-                      setLyricistsFirstName((lyricistsFirstNames) => [
-                        ...lyricistsFirstNames,
-                        "",
-                      ]);
-                    }}
+                    onClick={() =>
+                      setLyricists((lyricists) => [...lyricists, ""])
+                    }
                   >
                     + Add lyricist
                   </button>
                 </div>
                 <div>
-                  <h2 className="font-bold text-2xl mt-8 mb-2">Tags</h2>
+                  <h2 className="font-bold text-2xl mt-8 mb-2">Composers</h2>
                   <div className="space-y-4">
+                    {composers.map((composer, i) => {
+                      return (
+                        <div className="flex items-end">
+                          <div className="flex flex-col flex-grow">
+                            <label
+                              for={`lyricists_last_name_${i}`}
+                              className="font-bold"
+                            >
+                              Composer
+                            </label>
+                            <input
+                              id={`lyricists_last_name_input_${i}`}
+                              className="p-4 bg-gray-100 mt-2"
+                              onChange={(e) =>
+                                setComposers((composers) =>
+                                  composers.map((composer, compIndex) =>
+                                    i === compIndex ? e.target.value : composer
+                                  )
+                                )
+                              }
+                            />
+                          </div>
+
+                          <div className="flex p-2">
+                            <BsFillTrash2Fill
+                              id={`img${i}`}
+                              className="cursor-pointer w-8 h-8"
+                              onClick={() => {
+                                setComposers((composers) =>
+                                  composers.filter(
+                                    (composers, compIndex) => i !== compIndex
+                                  )
+                                );
+                              }}
+                            />
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  <button
+                    className="border-dashed border-2 border-gray-400 p-4 w-full mt-4"
+                    onClick={() =>
+                      setComposers((composers) => [...composers, ""])
+                    }
+                  >
+                    + Add composer
+                  </button>
+                </div>
+                <div>
+                  <h2 className="font-bold text-2xl mt-8 mb-2">Tags</h2>
+                  <div className="gap-4 grid grid-cols-1 sm:grid-cols-2">
                     {tags.map((tag, i) => {
                       return (
-                        <div
-                          className="p-4 w-full bg-white shadow-md grid grid-cols-1 sm:grid-cols-2 gap-4"
-                          key={i}
-                        >
+                        <div className="flex items-end" key={i}>
                           <div className="flex flex-col flex-grow">
                             <label for={`tag${i}`} className="font-bold">
                               Tag
@@ -397,11 +409,10 @@ export default function RegisterCopyright() {
                               }
                             />
                           </div>
-                          <div className="flex justify-end">
+                          <div className="p-3">
                             <BsFillTrash2Fill
                               id={`img${i}`}
-                              className="w-8 h-8"
-                              className="cursor-pointer w-8 h-8"
+                              className="w-8 h-8 cursor-pointer"
                               onClick={() => {
                                 setTags((tags) =>
                                   tags.filter((tag, tagIndex) => i !== tagIndex)
@@ -415,9 +426,7 @@ export default function RegisterCopyright() {
                   </div>
                   <button
                     className="border-dashed border-2 border-gray-400 p-4 w-full mt-4"
-                    onClick={() => {
-                      setTags((tags) => [...tags, ""]);
-                    }}
+                    onClick={() => setTags((tags) => [...tags, ""])}
                   >
                     + Add tag
                   </button>
@@ -472,7 +481,6 @@ export default function RegisterCopyright() {
                       <div className="flex justify-center col-start-2">
                         <BsFillTrash2Fill
                           id={`img${i}`}
-                          className="w-8 h-8"
                           className="cursor-pointer w-8 h-8"
                           onClick={() => {
                             setMembers((members) =>
