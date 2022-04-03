@@ -192,7 +192,7 @@ export async function getServerSideProps() {
   else provider = new ethers.providers.JsonRpcProvider();
 
   const cmoRegistry = new ethers.Contract(
-    process.env.NEXT_PUBLIC_CMO_CONTRACT_ADDRESS,
+    process.env.CMO_CONTRACT_ADDRESS,
     CMORegistryArtifact.abi,
     provider
   );
