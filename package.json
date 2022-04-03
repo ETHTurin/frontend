@@ -9,14 +9,17 @@
   },
   "dependencies": {
     "@gnosis.pm/safe-core-sdk": "^0.1.2",
+    "downshift": "^6.1.7",
     "ethers": "^5.3.1",
+    "icons": "^1.0.0",
     "ipfs": "^0.55.4",
     "ipfs-http-client": "^50.1.2",
     "next": "^12.1.4",
     "react": "^18.0.0",
     "react-dom": "^18.0.0",
     "react-dropdown": "^1.9.2",
-    "react-dropzone": "^11.3.2"
+    "react-dropzone": "^11.3.2",
+    "react-icons": "^4.3.1"
   },
   "devDependencies": {
     "autoprefixer": "^10.4.4",
