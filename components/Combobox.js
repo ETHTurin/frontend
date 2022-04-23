@@ -87,10 +87,10 @@ function ComboboxItem({
 }) {
   return (
     <li
-      className={`bg-white p-2 truncate 
+      className={`bg-white p-2 truncate cursor-pointer
     ${isFirst ? "rounded-t-md mt" : ""} 
     ${isLast ? "rounded-b-md" : ""} 
-    ${highlightedIndex === index ? "bg-green-200" : ""}`}
+    ${highlightedIndex === index ? "bg-purple-200" : ""}`}
       key={`${item}${index}`}
       {...getItemProps({ item, index })}
     >

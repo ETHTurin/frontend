@@ -258,6 +258,7 @@ export default function RegisterCopyright() {
                 <label className="font-bold">Duration</label>
                 <input
                   type={"number"}
+                  step="0.01"
                   className="p-4 bg-gray-100 mt-2"
                   onChange={(e) => setDuration(e.target.value)}
                 />

@@ -24,7 +24,7 @@ function PayCopyright({ data }) {
             <p className="uppercase text-sm text-gray-700">Tags</p>
             <p>{item.duration} min</p>
             <p>{item.year}</p>
-            <p>{item.description}</p>
+            <p className="truncate">{item.description}</p>
             <p>{item.composers.join(", ")}</p>
             <p>{item.lyricists.join(", ")}</p>
             <p>{item.tags.join(", ")}</p>
@@ -52,7 +52,10 @@ function PayCopyright({ data }) {
       );
       const signerAddress = await signer.getAddress();
       var balance = await cmoRegistry.balanceOf(signerAddress, 1);
-      seBalance(ethers.BigNumber.from(balance).toNumber());
+
+      console.log(balance);
+
+      seBalance(balance.toNumber());
     } catch (e) {
       throw new Error("Something went wrong");
     }
@@ -145,7 +148,7 @@ function PayCopyright({ data }) {
                   );
 
                   try {
-                    var payRightsTx = await cmoRegistry.payRights(buyCids, {
+                    let payRightsTx = await cmoRegistry.payRights(buyCids, {
                       value: 1000,
                     });
 
@@ -198,6 +201,8 @@ export async function getServerSideProps() {
   );
 
   const cids = await cmoRegistry.getRightsCids();
+
+  console.log(cids);
 
   const data = await Promise.all(
     cids.map(async (cid) => {
